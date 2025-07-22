@@ -80,6 +80,7 @@ model MentorProfile {
   github     String?
   website    String?
   userId     Int     @unique
+  
   user       User    @relation(fields: [userId], references: [id])
 }
 
