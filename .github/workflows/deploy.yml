@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: 🔧 Deploy edora_backend to Server
+    name: 🔧 Deploy Exam-main to AWS Ubuntu
     runs-on: ubuntu-latest
 
     steps:
@@ -27,13 +27,14 @@ jobs:
               git clean -fd
               git pull origin main
             else
+              git clone https://github.com/exam-main/Exam-main.git
               cd Exam-main
             fi
 
-            echo "🧼 Eski containerlarni toxtatish..."
+            echo "🧼 Docker containerlarni to'xtatish..."
             docker compose down || true
 
-            echo "📦 Docker build va up..."
+            echo "📦 Docker build va up qilish..."
             docker compose up -d --build
 
-            echo "✅ Deploy yakunlandi!"
+            echo "✅ Deploy tugadi!"
