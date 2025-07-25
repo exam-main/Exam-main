@@ -21,13 +21,13 @@ jobs:
             echo "👉 Loyihani yuklab olish yoki yangilash..."
             cd /home/${{ secrets.SERVER_USER }}
 
-            if [ -d "edora_backend" ]; then
-              cd edora_backend
+            if [ -d "Exam-main" ]; then
+              cd Exam-main
               git reset --hard
               git clean -fd
               git pull origin main
             else
-              cd edora_backend
+              cd Exam-main
             fi
 
             echo "🧼 Eski containerlarni toxtatish..."
