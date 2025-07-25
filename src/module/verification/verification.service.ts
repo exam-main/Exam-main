@@ -33,11 +33,11 @@ export class VerificationService {
     private getMessage(type: EVerificationtypes, otp: string) {
         switch (type) {
             case EVerificationtypes.register:
-                return `Platformadan ro‘yxatdan o‘tganingiz uchun ${otp} kod yuborildi`;
+                return `Platformadan royxatdan otganingiz uchun ${otp} kod yuborildi`;
             case EVerificationtypes.RESET_PASSWORD:
                 return `Parolingizni tiklash uchun ${otp} kod yuborildi`;
             case EVerificationtypes.EDIT_PHONE:
-                return `Telefon raqamingizni o‘zgartirish uchun ${otp} kod yuborildi`;
+                return `Telefon raqamingizni ozgartirish uchun ${otp} kod yuborildi`;
             default:
                 return `Tasdiqlash uchun ${otp} kod yuborildi`;
         }
@@ -45,7 +45,7 @@ export class VerificationService {
 
     private async throwIfUserExists(phone: string) {
         const user = await this.prisma.user.findUnique({
-            where: { phone },    // ✅ to‘g‘ri yozilishi shu
+            where: { phone },    
         });
 
         if (user) {

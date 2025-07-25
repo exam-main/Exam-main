@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/common/core/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -15,22 +15,33 @@ export class UserService {
     return bcrypt.hash(password, salt);
   }
 
-  // ADMIN YARATISH
-  async createAdmin(dto: CreateAdminDto) {
-    const password = await this.hashPassword(dto.password);
-    return this.prisma.user.create({
-      data: {
-        phone: dto.phone,
-        fullName: dto.fullName,
-        password: password,
-        username: dto.phone,
-        email: dto.phone + '@admin.local',
-        role: 'ADMIN',
-      },
-    });
+  
+async createAdmin(dto: CreateAdminDto) {
+  const existing = await this.prisma.user.findUnique({
+    where: { phone: dto.phone },
+  });
+
+  if (existing) {
+    throw new BadRequestException('Bu telefon raqam bilan user mavjud');
   }
 
-  // MENTOR YARATISH
+  const password = await this.hashPassword(dto.password);
+
+  return this.prisma.user.create({
+    data: {
+      phone: dto.phone,
+      fullName: dto.fullName,
+      password,
+      role: 'ADMIN',
+      username: dto.username, 
+      email: dto.email,       
+    },
+  });
+}
+
+
+
+
   async createMentor(dto: CreateMentorDto) {
     const password = await this.hashPassword(dto.password);
 
@@ -63,10 +74,21 @@ export class UserService {
     return user;
   }
 
-  // ASSISTANT YARATISH
+
   async createAssistant(dto: CreateAssistantDto) {
+  
+    const course = await this.prisma.course.findUnique({
+      where: { id: dto.courseId },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+   
     const password = await this.hashPassword(dto.password);
 
+  
     const user = await this.prisma.user.create({
       data: {
         phone: dto.phone,
@@ -78,6 +100,7 @@ export class UserService {
       },
     });
 
+    
     await this.prisma.assignedCourse.create({
       data: {
         userId: user.id,
@@ -88,7 +111,7 @@ export class UserService {
     return user;
   }
 
-  // MENTOR UPDATE
+  
   async updateMentor(id: number, dto: UpdateMentorDto) {
     const user = await this.prisma.user.update({
       where: { id, role: 'MENTOR' },
@@ -116,7 +139,7 @@ export class UserService {
     return user;
   }
 
-  // QOLGANLARI
+
   getMentors() {
     return this.prisma.user.findMany({ where: { role: 'MENTOR' } });
   }

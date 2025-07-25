@@ -22,7 +22,7 @@ export class CourseCategoryService {
   async findOne(id: number) {
     const category = await this.prisma.courseCategory.findUnique({
       where: { id },
-      include: { courses: true },  // Categoryga biriktirilgan kurslarni ham chiqarish
+      include: { courses: true }, 
     });
     if (!category) throw new NotFoundException('Category not found');
     return category;

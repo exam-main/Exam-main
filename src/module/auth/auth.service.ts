@@ -23,11 +23,9 @@ export class AuthService implements OnModuleInit {
     private readonly redisService: RedisService,
   ) {}
 
-async onModuleInit() {
-  this.redisClient = this.redisService.getClient();
-}
-
-
+  async onModuleInit() {
+    this.redisClient = this.redisService.getClient();
+  }
 
   async register(registerAuthDto: RegisterAuthDto) {
     const {
@@ -42,7 +40,13 @@ async onModuleInit() {
 
     const existingUser = await this.prisma.user.findFirst({
       where: {
-        OR: [{ fullName }, { email }, { phone }],
+        OR: [
+          { username },
+          { email },
+          { phone },
+        ],
+        // Agar soft-delete bo‘lsa:
+        // deletedAt: null,
       },
     });
 
@@ -54,20 +58,18 @@ async onModuleInit() {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-const user = await this.prisma.user.create({
-  data: {
-    username,
-    email,
-    phone,             // <-- DTO’da ham phone bo‘lishi kerak
-    password: hashedPassword,
-    fullName,
-    avatarUrl: avatarUrl ?? 'https://example.com/default-avatar.png',
-    country: country ?? 'Uzbekistan',
-    role: UserRole.STUDENT,
-  },
-});
-
-
+    const user = await this.prisma.user.create({
+      data: {
+        username,
+        email,
+        phone,
+        password: hashedPassword,
+        fullName,
+        avatarUrl: avatarUrl ?? 'https://example.com/default-avatar.png',
+        country: country ?? 'Uzbekistan',
+        role: UserRole.STUDENT,
+      },
+    });
 
     const payload = {
       sub: user.id,
@@ -99,20 +101,20 @@ const user = await this.prisma.user.create({
   }
 
   async login(loginAuthDto: LoginAuthDto) {
- const { Phone, password } = loginAuthDto;
+    const { phone, password } = loginAuthDto;
 
-const user = await this.prisma.user.findUnique({
-  where: { phone : Phone }
-});
+    const user = await this.prisma.user.findUnique({
+      where: { phone },
+    });
 
     if (!user) {
-      throw new UnauthorizedException('Username yoki parol notogri');
+      throw new UnauthorizedException('Telefon raqam yoki parol notogri');
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw new UnauthorizedException('Username yoki parol notogri');
+      throw new UnauthorizedException('Telefon raqam yoki parol notogri');
     }
 
     const payload = {
@@ -130,7 +132,7 @@ const user = await this.prisma.user.findUnique({
     });
 
     await this.redisClient.set(user.id.toString(), refreshToken, {
-      EX: 7 * 24 * 60 * 60, // 7 kun
+      EX: 7 * 24 * 60 * 60,
     });
 
     return {

@@ -81,7 +81,37 @@ export class CourseService {
   }
 
   async create(dto: CreateCourseDto) {
-    return this.prisma.course.create({ data: dto });
+   
+    const category = await this.prisma.courseCategory.findUnique({
+      where: { id: dto.categoryId },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    
+    const mentor = await this.prisma.user.findUnique({
+      where: { id: dto.mentorId },
+    });
+
+    if (!mentor) {
+      throw new NotFoundException('Mentor not found');
+    }
+
+   
+    return this.prisma.course.create({
+      data: {
+        name: dto.name,
+        about: dto.about,
+        price: dto.price,
+        banner: dto.banner,
+        introVideo: dto.introVideo,
+        level: dto.level,
+        mentorId: dto.mentorId,
+        categoryId: dto.categoryId,
+      },
+    });
   }
 
   async update(id: string, dto: UpdateCourseDto) {

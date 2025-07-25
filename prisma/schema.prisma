@@ -8,11 +8,13 @@ datasource db {
 }
 
 enum UserRole {
-  ADMIN
-  MENTOR
-  ASSISTANT
   STUDENT
+  MENTOR
+  ADMIN
+  ASSISTANT
+  SUPER_ADMIN  
 }
+
 
 enum CourseLevel {
   BEGINNER
@@ -66,8 +68,6 @@ model User {
   examResults         ExamResult[]
 }
 
-
-
 model MentorProfile {
   id         Int     @id @default(autoincrement())
   about      String?
@@ -80,8 +80,8 @@ model MentorProfile {
   github     String?
   website    String?
   userId     Int     @unique
-  
-  user       User    @relation(fields: [userId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model CourseCategory {
@@ -245,21 +245,6 @@ model HomeworkSubmission {
   userId Int
   user   User @relation(fields: [userId], references: [id])
 }
-
-model Exam {
-  id        Int        @id @default(autoincrement())
-  question  String
-  variantA  String
-  variantB  String
-  variantC  String
-  variantD  String
-  answer    ExamAnswer
-  createdAt DateTime   @default(now())
-
-  lessonGroupId Int
-  lessonGroup   LessonGroup @relation(fields: [lessonGroupId], references: [id])
-}
-
 model ExamResult {
   id        Int      @id @default(autoincrement())
   passed    Boolean
@@ -269,9 +254,31 @@ model ExamResult {
 
   lessonGroupId Int
   userId        Int
+  examId        Int
 
   user        User        @relation(fields: [userId], references: [id])
   lessonGroup LessonGroup @relation(fields: [lessonGroupId], references: [id])
+  exam        Exam        @relation(fields: [examId], references: [id])
+}
+
+model QuestionAnswer {
+  id        Int       @id @default(autoincrement())
+  text      String
+  file      String?
+  updatedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  questionId Int      @unique
+  question   Question @relation(fields: [questionId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model Device {
+  id          Int      @id @default(autoincrement())
+  deviceToken String   @unique
+  createdAt   DateTime @default(now())
 }
 
 model Question {
@@ -292,16 +299,38 @@ model Question {
   answer QuestionAnswer?
 }
 
-model QuestionAnswer {
-  id        Int       @id @default(autoincrement())
-  text      String
-  file      String?
-  updatedAt DateTime?
-  createdAt DateTime  @default(now())
 
-  questionId Int      @unique
-  question   Question @relation(fields: [questionId], references: [id])
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title     String
+  createdAt DateTime @default(now())
 
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  lessonGroupId Int
+  lessonGroup   LessonGroup @relation(fields: [lessonGroupId], references: [id])
+
+  questions   ExamQuestion[] @relation("ExamToQuestions") // <- ADD relation name
+  examResults ExamResult[]
+}
+
+model ExamQuestion {
+  id            Int    @id @default(autoincrement())
+  question      String
+  variantA      String
+  variantB      String
+  variantC      String
+  variantD      String
+  correctAnswer String
+
+  examId Int
+  exam   Exam @relation(fields: [examId], references: [id], name: "ExamToQuestions") // <- MATCH relation name
+
+  createdAt DateTime @default(now())
+}
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
 }

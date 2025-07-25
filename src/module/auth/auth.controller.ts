@@ -4,13 +4,11 @@ import {
   Body,
   Res,
   SetMetadata,
-  UnauthorizedException,
-  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -27,9 +25,9 @@ export class AuthController {
   @Post('/register')
   @ApiOperation({ summary: 'Foydalanuvchi royxatdan otadi' })
   @ApiBody({ type: RegisterAuthDto })
-  @ApiResponse({ status: 201, description: 'Foydalanuvchi royxatdan otdi' })
+  @ApiResponse({ status: 201, description: 'Royxatdan otish muvaffaqiyatli' })
   async register(@Body() registerAuthDto: RegisterAuthDto) {
-    return await this.authService.register(registerAuthDto);
+    return this.authService.register(registerAuthDto);
   }
 
   @Post('/login')
@@ -37,23 +35,23 @@ export class AuthController {
   @ApiBody({ type: LoginAuthDto })
   @ApiResponse({ status: 200, description: 'Muvaffaqiyatli login' })
   async login(@Body() loginAuthDto: LoginAuthDto) {
-    return await this.authService.login(loginAuthDto);
+    return this.authService.login(loginAuthDto);
   }
 
   @Post('/logout')
-  @ApiOperation({ summary: 'Tizimdan chiqish (refresh tokenni o‘chirish)' })
+  @ApiOperation({ summary: 'Tizimdan chiqish (refresh tokenni ochirish)' })
   @ApiResponse({ status: 200, description: 'Tizimdan muvaffaqiyatli chiqildi' })
   async logout(
-    @Body('userId') userId: string, // client dan userId ni olish kerak
+    @Body('userId') userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.authService.logout(userId);
-    res.clearCookie('Auth_token'); // agar cookie ishlatilsa
+    res.clearCookie('Auth_token');
     return { message: 'Tizimdan muvaffaqiyatli chiqildi' };
   }
 
   @Post('/refresh-token')
-  @ApiOperation({ summary: 'Yangi access token olish uchun refresh tokenni yuborish' })
+  @ApiOperation({ summary: 'Yangi access token olish' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -64,8 +62,10 @@ export class AuthController {
       required: ['userId', 'refreshToken'],
     },
   })
-  @ApiResponse({ status: 200, description: 'Yangi access token' })
-  async refreshToken(@Body() body: { userId: string; refreshToken: string }) {
+  @ApiResponse({ status: 200, description: 'Yangi access token qaytarildi' })
+  async refreshToken(
+    @Body() body: { userId: string; refreshToken: string },
+  ) {
     return this.authService.refreshToken(body.userId, body.refreshToken);
   }
 }
