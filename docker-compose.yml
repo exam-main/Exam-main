@@ -36,7 +36,10 @@ services:
     ports:
       - "3000:3000"
     restart: always
-    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run start:prod"
+    command: >
+      sh -c "npx prisma generate &&
+             npx prisma migrate deploy &&
+             npm run start:prod"
 
 volumes:
   pgdata:

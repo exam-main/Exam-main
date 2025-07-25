@@ -7,18 +7,18 @@ on:
 
 jobs:
   deploy:
-    name: 🔧 Deploy Exam-main to AWS Ubuntu
+    name: 🔧 Deploy NestJS App to Ubuntu
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚀 Deploy via SSH
+      - name: 🚀 SSH to EC2 and Deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            echo "👉 Loyihani yuklab olish yoki yangilash..."
+            echo "👉 Loyihani olish yoki yangilash..."
             cd /home/${{ secrets.SERVER_USER }}
 
             if [ -d "Exam-main" ]; then
@@ -31,10 +31,10 @@ jobs:
               cd Exam-main
             fi
 
-            echo "🧼 Docker containerlarni to'xtatish..."
+            echo "🧼 Eski konteynerlarni to'xtatish..."
             docker compose down || true
 
-            echo "📦 Docker build va up qilish..."
+            echo "🚧 Yangilash (build) va ishga tushirish..."
             docker compose up -d --build
 
-            echo "✅ Deploy tugadi!"
+            echo "✅ Deploy muvoffaqiyatli yakunlandi!"
